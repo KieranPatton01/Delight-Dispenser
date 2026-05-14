@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delight Dispenser Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #c9a84c;
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface2: #1c1c1c;
+      --border: rgba(255,255,255,0.08);
+      --text: #e8e8e8;
+      --dim: rgba(232,232,232,0.45);
+      --green: #4caf76;
+      --red: #c94c4c;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+
+    /* ── PIN Screen ───────────────────────────────────────── */
+    #pinScreen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 20px;
+      padding: 24px;
+    }
+
+    #pinScreen h2 {
+      font-size: 18px;
+      font-weight: 400;
+      color: var(--gold);
+    }
+
+    #pinScreen p {
+      color: var(--dim);
+      font-size: 13px;
+    }
+
+    .pin-input {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 20px;
+      letter-spacing: 8px;
+      padding: 14px 20px;
+      border-radius: 8px;
+      width: 180px;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .pin-input:focus { border-color: var(--gold); }
+
+    .pin-error {
+      color: var(--red);
+      font-size: 12px;
+      min-height: 18px;
+    }
+
+    /* ── Admin App ────────────────────────────────────────── */
+    #adminApp {
+      display: none;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .admin-header h1 {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--gold);
+    }
+
+    .admin-header span {
+      font-size: 12px;
+      color: var(--dim);
+    }
+
+    /* ── Alert banner ─────────────────────────────────────── */
+    .alert-banner {
+      background: rgba(201, 168, 76, 0.1);
+      border: 1px solid rgba(201, 168, 76, 0.3);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .alert-banner.show { display: flex; }
+
+    .alert-banner-text { font-size: 13px; color: var(--gold); }
+
+    /* ── Section ──────────────────────────────────────────── */
+    .section {
+      margin-bottom: 28px;
+    }
+
+    .section-title {
+      font-size: 10px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 12px;
+    }
+
+    /* ── Card form ────────────────────────────────────────── */
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    label { font-size: 12px; color: var(--dim); }
+
+    textarea, select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    textarea { resize: vertical; min-height: 80px; }
+    textarea:focus, select:focus { border-color: var(--gold); }
+
+    select option { background: var(--surface2); }
+
+    /* ── Buttons ──────────────────────────────────────────── */
+    .btn {
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn:hover:not(:disabled) { opacity: 0.85; }
+
+    .btn-primary { background: var(--gold); color: #000; }
+    .btn-green   { background: var(--green); color: #000; }
+    .btn-red     { background: var(--red); color: #fff; }
+    .btn-ghost   { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+    /* ── Card list ────────────────────────────────────────── */
+    .card-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .card-item-left { flex: 1; min-width: 0; }
+
+    .card-item-type {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
+
+    .card-item-content {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .card-item-meta {
+      font-size: 11px;
+      color: var(--dim);
+      margin-top: 4px;
+    }
+
+    .card-item-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      margin-right: 6px;
+    }
+
+    .status-dot.locked   { background: var(--dim); }
+    .status-dot.available { background: var(--gold); }
+    .status-dot.revealed { background: var(--green); }
+
+    .empty-list {
+      font-size: 13px;
+      color: var(--dim);
+      text-align: center;
+      padding: 20px;
+    }
+
+    .feedback { font-size: 12px; color: var(--green); min-height: 18px; margin-top: 6px; }
+    .feedback.error { color: var(--red); }
+  </style>
+</head>
+<body>
+
+  <!-- ── PIN Screen ─────────────────────────────────────── -->
+  <div id="pinScreen">
+    <h2>Delight Dispenser</h2>
+    <p>Admin access</p>
+    <input
+      class="pin-input"
+      type="password"
+      inputmode="numeric"
+      maxlength="4"
+      placeholder="····"
+      id="pinInput"
+      onkeyup="checkPin(event)"
+      autofocus
+    />
+    <div class="pin-error" id="pinError"></div>
+  </div>
+
+  <!-- ── Admin App ──────────────────────────────────────── -->
+  <div id="adminApp">
+
+    <div class="admin-header">
+      <h1>Delight Dispenser Admin</h1>
+      <span id="adminDate"></span>
+    </div>
+
+    <!-- Request alert -->
+    <div class="alert-banner" id="requestBanner">
+      <div class="alert-banner-text">⚡ A request has been received</div>
+      <button class="btn btn-ghost" onclick="dismissRequest()" style="font-size:12px;padding:7px 12px;">Dismiss</button>
+    </div>
+
+    <!-- Add new card -->
+    <div class="section">
+      <div class="section-title">Add a New Card</div>
+      <div class="form-row">
+        <label for="newType">Type</label>
+        <select id="newType">
+          <option value="compliment">Compliment</option>
+          <option value="date">Date Idea</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="newContent">Content</label>
+        <textarea id="newContent" placeholder="Write something lovely…"></textarea>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="btn btn-primary" onclick="addCard(false)">Save as Locked</button>
+        <button class="btn btn-green" onclick="addCard(true)">Save &amp; Release Now</button>
+      </div>
+      <div class="feedback" id="addFeedback"></div>
+    </div>
+
+    <!-- Locked cards -->
+    <div class="section">
+      <div class="section-title">Locked Cards</div>
+      <div class="card-list" id="lockedList">
+        <div class="empty-list">No locked cards</div>
+      </div>
+    </div>
+
+    <!-- Available card -->
+    <div class="section">
+      <div class="section-title">Available (visible to Isla)</div>
+      <div class="card-list" id="availableList">
+        <div class="empty-list">No card currently available</div>
+      </div>
+    </div>
+
+    <!-- Revealed history -->
+    <div class="section">
+      <div class="section-title">Revealed — History</div>
+      <div class="card-list" id="revealedList">
+        <div class="empty-list">Nothing revealed yet</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <script>
+    // ─── Config ────────────────────────────────────────────────────────────────
+    // Change this PIN to whatever you like (4 digits)
+    const ADMIN_PIN = '1902';
+
+    // ─── DOM ───────────────────────────────────────────────────────────────────
+    const pinScreen  = document.getElementById('pinScreen');
+    const adminApp   = document.getElementById('adminApp');
+    const pinInput   = document.getElementById('pinInput');
+    const pinError   = document.getElementById('pinError');
+
+    // ─── PIN check ─────────────────────────────────────────────────────────────
+    function checkPin(e) {
+      pinError.textContent = '';
+      if (pinInput.value.length === 4) {
+        if (pinInput.value === ADMIN_PIN) {
+          pinScreen.style.display = 'none';
+          adminApp.style.display  = 'block';
+          boot();
+        } else {
+          pinError.textContent = 'Incorrect PIN';
+          pinInput.value = '';
+          pinInput.focus();
+        }
+      }
+    }
+
+    // ─── Firebase ──────────────────────────────────────────────────────────────
+    const db = firebase.firestore();
+
+    // ─── Boot ──────────────────────────────────────────────────────────────────
+    function boot() {
+      document.getElementById('adminDate').textContent = new Date().toLocaleDateString('en-GB', {
+        weekday: 'short', day: 'numeric', month: 'short'
+      });
+
+      listenCards();
+      listenRequests();
+    }
+
+    // ─── Listen to all cards ───────────────────────────────────────────────────
+    function listenCards() {
+      db.collection('cards')
+        .orderBy('createdAt', 'desc')
+        .onSnapshot(snapshot => {
+          const locked    = [];
+          const available = [];
+          const revealed  = [];
+
+          snapshot.forEach(doc => {
+            const d = { id: doc.id, ...doc.data() };
+            if (d.status === 'locked')    locked.push(d);
+            else if (d.status === 'available') available.push(d);
+            else if (d.status === 'revealed')  revealed.push(d);
+          });
+
+          renderList('lockedList',    locked,    renderLockedCard);
+          renderList('availableList', available, renderAvailableCard);
+          renderList('revealedList',  revealed,  renderRevealedCard);
+        });
+    }
+
+    // ─── Listen to request ─────────────────────────────────────────────────────
+    function listenRequests() {
+      db.collection('config').doc('app').onSnapshot(doc => {
+        const data = doc.data() || {};
+        const banner = document.getElementById('requestBanner');
+        if (data.requestPending) {
+          banner.classList.add('show');
+        } else {
+          banner.classList.remove('show');
+        }
+      });
+    }
+
+    async function dismissRequest() {
+      await db.collection('config').doc('app').set({ requestPending: false }, { merge: true });
+    }
+
+    // ─── Render helpers ────────────────────────────────────────────────────────
+    function renderList(containerId, items, renderFn) {
+      const el = document.getElementById(containerId);
+      if (!items.length) {
+        el.innerHTML = '<div class="empty-list">None</div>';
+        return;
+      }
+      el.innerHTML = '';
+      items.forEach(item => el.appendChild(renderFn(item)));
+    }
+
+    function typeLabel(type) {
+      return type === 'date' ? 'Date Idea' : 'Compliment';
+    }
+
+    function fmtDate(ts) {
+      if (!ts) return '';
+      return ts.toDate().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function renderLockedCard(d) {
+      const el = document.createElement('div');
+      el.className = 'card-item';
+      el.innerHTML = `
+        <div class="card-item-left">
+          <div class="card-item-type"><span class="status-dot locked"></span>${typeLabel(d.type)}</div>
+          <div class="card-item-content">${d.content}</div>
+          <div class="card-item-meta">Added ${fmtDate(d.createdAt)}</div>
+        </div>
+        <div class="card-item-actions">
+          <button class="btn btn-green" onclick="releaseCard('${d.id}')">Release</button>
+          <button class="btn btn-red" onclick="deleteCard('${d.id}')">Delete</button>
+        </div>
+      `;
+      return el;
+    }
+
+    function renderAvailableCard(d) {
+      const el = document.createElement('div');
+      el.className = 'card-item';
+      el.innerHTML = `
+        <div class="card-item-left">
+          <div class="card-item-type"><span class="status-dot available"></span>${typeLabel(d.type)}</div>
+          <div class="card-item-content">${d.content}</div>
+          <div class="card-item-meta">Released ${fmtDate(d.availableAt)} — Isla hasn't scratched yet</div>
+        </div>
+        <div class="card-item-actions">
+          <button class="btn btn-ghost" onclick="lockCard('${d.id}')">Lock Back</button>
+        </div>
+      `;
+      return el;
+    }
+
+    function renderRevealedCard(d) {
+      const el = document.createElement('div');
+      el.className = 'card-item';
+      el.innerHTML = `
+        <div class="card-item-left">
+          <div class="card-item-type"><span class="status-dot revealed"></span>${typeLabel(d.type)}</div>
+          <div class="card-item-content">${d.content}</div>
+          <div class="card-item-meta">Revealed ${fmtDate(d.revealedAt)}</div>
+        </div>
+      `;
+      return el;
+    }
+
+    // ─── Card actions ──────────────────────────────────────────────────────────
+    async function addCard(releaseNow) {
+      const content = document.getElementById('newContent').value.trim();
+      const type    = document.getElementById('newType').value;
+      const fb      = document.getElementById('addFeedback');
+
+      if (!content) { fb.textContent = 'Add some content first.'; fb.className = 'feedback error'; return; }
+
+      // Check: only one available card at a time
+      if (releaseNow) {
+        const existing = await db.collection('cards').where('status', '==', 'available').limit(1).get();
+        if (!existing.empty) {
+          fb.textContent = 'There is already a card available for Isla. Lock it back first.';
+          fb.className = 'feedback error';
+          return;
+        }
+      }
+
+      try {
+        await db.collection('cards').add({
+          content,
+          type,
+          status: releaseNow ? 'available' : 'locked',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          availableAt: releaseNow ? firebase.firestore.FieldValue.serverTimestamp() : null,
+          revealedAt: null
+        });
+
+        // If releasing, also clear any pending request
+        if (releaseNow) {
+          await db.collection('config').doc('app').set({ requestPending: false }, { merge: true });
+        }
+
+        document.getElementById('newContent').value = '';
+        fb.textContent = releaseNow ? '✓ Card released — Isla can see it now' : '✓ Card saved';
+        fb.className = 'feedback';
+        setTimeout(() => fb.textContent = '', 3000);
+      } catch (err) {
+        fb.textContent = 'Error: ' + err.message;
+        fb.className = 'feedback error';
+      }
+    }
+
+    async function releaseCard(id) {
+      // Check no other available card
+      const existing = await db.collection('cards').where('status', '==', 'available').limit(1).get();
+      if (!existing.empty) {
+        alert('There is already a card available for Isla. Lock it back first.');
+        return;
+      }
+      await db.collection('cards').doc(id).update({
+        status: 'available',
+        availableAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      // Clear pending request
+      await db.collection('config').doc('app').set({ requestPending: false }, { merge: true });
+    }
+
+    async function lockCard(id) {
+      await db.collection('cards').doc(id).update({ status: 'locked', availableAt: null });
+    }
+
+    async function deleteCard(id) {
+      if (!confirm('Delete this card?')) return;
+      await db.collection('cards').doc(id).delete();
+    }
+  </script>
+</body>
+</html>
