@@ -1,7 +1,7 @@
 {
-  "name": "Delight Dispenser",
-  "short_name": "Delights",
-  "description": "Your personal scratch card of delights",
+  "name": "Date Dispenser",
+  "short_name": "Date Dispenser",
+  "description": "Your personal scratch card of dates and delights",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0a0a0a",

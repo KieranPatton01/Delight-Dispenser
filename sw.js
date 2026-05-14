@@ -1,4 +1,4 @@
-const CACHE_NAME = 'delight-dispenser-v1';
+const CACHE_NAME = 'date-dispenser-v1';
 const ASSETS = [
   './',
   './index.html',
@@ -33,4 +33,4 @@ self.addEventListener('fetch', e => {
       return res;
     }))
   );
-});
+}); 
