@@ -355,7 +355,7 @@
 <body>
 
   <div class="header">
-    <div class="header-label">🐌</div>
+    <div class="header-label">For Isla</div>
     <h1>Date <span>Dispenser</span></h1>
   </div>
 
@@ -367,12 +367,12 @@
     </div>
 
     <div class="scratch-card-wrap hidden" id="scratchWrap">
-      <div class="scratch-card-label">Your Rattling Awaits</div>
+      <div class="scratch-card-label">Your Date Awaits</div>
       <div class="card-container" id="cardContainer">
         <div class="card-reveal" id="cardReveal">
           <div class="reveal-decoration"></div>
           <div class="reveal-type-badge" id="revealType">Compliment</div>
-          <div class="reveal-content" id="revealContent">Lovebombing is waiting for you here.</div>
+          <div class="reveal-content" id="revealContent">Something wonderful is waiting for you here.</div>
           <div class="reveal-decoration"></div>
         </div>
         <canvas id="scratchCanvas"></canvas>
@@ -386,14 +386,14 @@
 
     <div class="state-empty hidden" id="stateEmpty">
       <div class="empty-icon">✦</div>
-      <div class="empty-title">No Date Yet, Tart</div>
-      <div class="empty-sub">Ask For a Date (Subject to Good Behavior)</div>
+      <div class="empty-title">No date yet</div>
+      <div class="empty-sub">Ask Kieran to send you something special.</div>
       <button class="btn-request hidden" id="btnRequest" onclick="sendRequest()">
         Request a Date
       </button>
       <div class="pending-pill hidden" id="pendingPill">
         <div class="pending-dot"></div>
-        Im Working on Lovebombing You
+        Kieran is planning something…
       </div>
     </div>
 
@@ -739,6 +739,65 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(console.error);
     }
+
+    // ─── Music ────────────────────────────────────────────────────────────────
+    const bgAudio  = document.getElementById('bgAudio');
+    const musicBtn = document.getElementById('musicBtn');
+    let audioUnlocked = false;
+
+    bgAudio.volume = 0.35;
+
+    function updateMusicBtn() {
+      if (bgAudio.paused) {
+        musicBtn.textContent = '♪';
+        musicBtn.classList.remove('playing');
+        musicBtn.classList.add('muted');
+      } else {
+        musicBtn.textContent = '♫';
+        musicBtn.classList.add('playing');
+        musicBtn.classList.remove('muted');
+      }
+    }
+
+    function playAudio() {
+      const promise = bgAudio.play();
+      if (promise !== undefined) {
+        promise.then(() => {
+          audioUnlocked = true;
+          updateMusicBtn();
+        }).catch(err => {
+          console.warn('Audio play blocked:', err.message);
+          updateMusicBtn();
+        });
+      }
+    }
+
+    function toggleMusic() {
+      if (bgAudio.paused) {
+        playAudio();
+      } else {
+        bgAudio.pause();
+        updateMusicBtn();
+      }
+    }
+
+    // Start on first user interaction — handles strict autoplay policy on iOS/Chrome
+    function onFirstInteraction() {
+      if (audioUnlocked) return;
+      playAudio();
+    }
+
+    document.addEventListener('touchstart', onFirstInteraction, { once: true, passive: true });
+    document.addEventListener('mousedown',  onFirstInteraction, { once: true });
+    document.addEventListener('keydown',    onFirstInteraction, { once: true });
+
+    bgAudio.addEventListener('pause', updateMusicBtn);
+    bgAudio.addEventListener('play',  updateMusicBtn);
+    bgAudio.addEventListener('error', () => {
+      console.error('Audio error — check music.mp3 is in the repo root and has been committed/pushed.');
+      musicBtn.textContent = '✕';
+      musicBtn.title = 'Audio file not found';
+    });
 
     // ─── Boot ─────────────────────────────────────────────────────────────────
     startListening();
