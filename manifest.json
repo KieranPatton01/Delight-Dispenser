@@ -1,7 +1,7 @@
 {
   "name": "DateDispenser",
-  "short_name": "Date Dispenser",
-  "description": "date reveal for mys crushhhh",
+  "short_name": "DateDispenser",
+  "description": "date reveal for my crushhhh",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0a0a0a",

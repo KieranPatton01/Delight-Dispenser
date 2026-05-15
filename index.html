@@ -355,7 +355,7 @@
 <body>
 
   <div class="header">
-    <div class="header-label">For Isla</div>
+    <div class="header-label">Stinky Poo Bum's</div>
     <h1>Date <span>Dispenser</span></h1>
   </div>
 
@@ -363,7 +363,7 @@
 
     <div class="state-loading" id="stateLoading">
       <div class="spinner"></div>
-      <div style="font-size:13px; color: var(--text-dim);">Loading your dates…</div>
+      <div style="font-size:13px; color: var(--text-dim);">Loading your dates perhaps…</div>
     </div>
 
     <div class="scratch-card-wrap hidden" id="scratchWrap">
@@ -379,21 +379,21 @@
       </div>
       <div class="scratch-hint" id="scratchHint">Use your finger to scratch and reveal</div>
       <div class="revealed-badge" id="revealedBadge">
-        <span style="color: var(--gold); font-size: 16px;">✦</span>
+        <span style="color: var(--gold); font-size: 16px;">🐛</span>
         Revealed
       </div>
     </div>
 
     <div class="state-empty hidden" id="stateEmpty">
-      <div class="empty-icon">✦</div>
+      <div class="empty-icon">🐛</div>
       <div class="empty-title">No date yet</div>
-      <div class="empty-sub">Ask Kieran to send you something special.</div>
+      <div class="empty-sub">Be Advised: All Date Requests are Subject to Vegetable Consumption Screening.</div>
       <button class="btn-request hidden" id="btnRequest" onclick="sendRequest()">
         Request a Date
       </button>
       <div class="pending-pill hidden" id="pendingPill">
         <div class="pending-dot"></div>
-        Kieran is planning something…
+        Checking if you've been well behaved…
       </div>
     </div>
 
@@ -402,7 +402,7 @@
   <div class="main" style="padding-top: 0;" id="historyArea">
     <div class="history-section hidden" id="historySection">
       <div class="divider"></div>
-      <div class="history-title">Past Dates</div>
+      <div class="history-title">Date History</div>
       <div class="history-list" id="historyList"></div>
     </div>
   </div>
@@ -410,7 +410,6 @@
   <div class="confetti-container" id="confettiContainer"></div>
 
   <!-- Background music -->
-  <!-- 🎵 Put your MP3 in the repo root named: music.mp3 -->
   <audio id="bgAudio" loop preload="none" src="music.mp3"></audio>
 
   <!-- Music toggle button -->
