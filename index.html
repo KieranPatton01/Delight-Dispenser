@@ -325,12 +325,37 @@
     @keyframes confettiFall { to { transform: translateY(100vh) rotate(720deg); opacity: 0; } }
 
     .hidden { display: none !important; }
+
+    /* Music toggle button */
+    .music-btn {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+      right: 20px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid rgba(201, 168, 76, 0.25);
+      color: var(--gold);
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 100;
+      transition: background 0.2s, border-color 0.2s, transform 0.15s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    .music-btn:active { transform: scale(0.92); }
+    .music-btn.playing { border-color: var(--gold); background: var(--gold-dim); }
+    .music-btn.muted   { opacity: 0.5; }
   </style>
 </head>
 <body>
 
   <div class="header">
-    <div class="header-label">For Isla</div>
+    <div class="header-label">🐌</div>
     <h1>Date <span>Dispenser</span></h1>
   </div>
 
@@ -342,12 +367,12 @@
     </div>
 
     <div class="scratch-card-wrap hidden" id="scratchWrap">
-      <div class="scratch-card-label">Your Date Awaits</div>
+      <div class="scratch-card-label">Your Rattling Awaits</div>
       <div class="card-container" id="cardContainer">
         <div class="card-reveal" id="cardReveal">
           <div class="reveal-decoration"></div>
           <div class="reveal-type-badge" id="revealType">Compliment</div>
-          <div class="reveal-content" id="revealContent">Something wonderful is waiting for you here.</div>
+          <div class="reveal-content" id="revealContent">Lovebombing is waiting for you here.</div>
           <div class="reveal-decoration"></div>
         </div>
         <canvas id="scratchCanvas"></canvas>
@@ -361,14 +386,14 @@
 
     <div class="state-empty hidden" id="stateEmpty">
       <div class="empty-icon">✦</div>
-      <div class="empty-title">No date yet</div>
-      <div class="empty-sub">Ask Kieran to send you something special.</div>
+      <div class="empty-title">No Date Yet, Tart</div>
+      <div class="empty-sub">Ask For a Date (Subject to Good Behavior)</div>
       <button class="btn-request hidden" id="btnRequest" onclick="sendRequest()">
         Request a Date
       </button>
       <div class="pending-pill hidden" id="pendingPill">
         <div class="pending-dot"></div>
-        Kieran is planning something…
+        Im Working on Lovebombing You
       </div>
     </div>
 
@@ -383,6 +408,15 @@
   </div>
 
   <div class="confetti-container" id="confettiContainer"></div>
+
+  <!-- Background music -->
+  <!-- 🎵 Put your MP3 in the repo root named: music.mp3 -->
+  <audio id="bgAudio" loop preload="auto">
+    <source src="music.mp3" type="audio/mpeg" />
+  </audio>
+
+  <!-- Music toggle button -->
+  <button class="music-btn muted" id="musicBtn" onclick="toggleMusic()" title="Toggle music">♪</button>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
