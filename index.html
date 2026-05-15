@@ -411,12 +411,10 @@
 
   <!-- Background music -->
   <!-- 🎵 Put your MP3 in the repo root named: music.mp3 -->
-  <audio id="bgAudio" loop preload="auto">
-    <source src="music.mp3" type="audio/mpeg" />
-  </audio>
+  <audio id="bgAudio" loop preload="none" src="music.mp3"></audio>
 
   <!-- Music toggle button -->
-  <button class="music-btn muted" id="musicBtn" onclick="toggleMusic()" title="Toggle music">♪</button>
+  <button class="music-btn muted" id="musicBtn" title="Toggle music">♪</button>
 
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -740,61 +738,62 @@
       navigator.serviceWorker.register('./sw.js').catch(console.error);
     }
 
-    // ─── Music ────────────────────────────────────────────────────────────────
+    // ─── Music (iOS-first) ────────────────────────────────────────────────────
+    // iOS rules:
+    //   1. play() must be called synchronously inside a click/touchend handler
+    //   2. No autoplay — iOS always blocks it, don't even try
+    //   3. Audio suspends when app is backgrounded — resume on visibilitychange
+
     const bgAudio  = document.getElementById('bgAudio');
     const musicBtn = document.getElementById('musicBtn');
-    let audioUnlocked = false;
+    let musicPlaying = false;
 
     bgAudio.volume = 0.35;
 
     function updateMusicBtn() {
-      if (bgAudio.paused) {
-        musicBtn.textContent = '♪';
-        musicBtn.classList.remove('playing');
-        musicBtn.classList.add('muted');
-      } else {
+      if (musicPlaying) {
         musicBtn.textContent = '♫';
         musicBtn.classList.add('playing');
         musicBtn.classList.remove('muted');
-      }
-    }
-
-    function playAudio() {
-      const promise = bgAudio.play();
-      if (promise !== undefined) {
-        promise.then(() => {
-          audioUnlocked = true;
-          updateMusicBtn();
-        }).catch(err => {
-          console.warn('Audio play blocked:', err.message);
-          updateMusicBtn();
-        });
-      }
-    }
-
-    function toggleMusic() {
-      if (bgAudio.paused) {
-        playAudio();
       } else {
-        bgAudio.pause();
-        updateMusicBtn();
+        musicBtn.textContent = '♪';
+        musicBtn.classList.remove('playing');
+        musicBtn.classList.add('muted');
       }
     }
 
-    // Start on first user interaction — handles strict autoplay policy on iOS/Chrome
-    function onFirstInteraction() {
-      if (audioUnlocked) return;
-      playAudio();
-    }
+    // Use addEventListener (not onclick) — more reliable on iOS PWA
+    musicBtn.addEventListener('click', function () {
+      if (musicPlaying) {
+        bgAudio.pause();
+        musicPlaying = false;
+        updateMusicBtn();
+      } else {
+        // Synchronous play() call within the click handler — iOS requires this
+        const p = bgAudio.play();
+        if (p !== undefined) {
+          p.then(() => {
+            musicPlaying = true;
+            updateMusicBtn();
+          }).catch(err => {
+            console.error('Audio failed:', err.message);
+            musicPlaying = false;
+            updateMusicBtn();
+          });
+        }
+      }
+    });
 
-    document.addEventListener('touchstart', onFirstInteraction, { once: true, passive: true });
-    document.addEventListener('mousedown',  onFirstInteraction, { once: true });
-    document.addEventListener('keydown',    onFirstInteraction, { once: true });
+    // Re-attempt play when app comes back to foreground (iOS suspends audio on background)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && musicPlaying) {
+        bgAudio.play().catch(() => {});
+      }
+    });
 
-    bgAudio.addEventListener('pause', updateMusicBtn);
-    bgAudio.addEventListener('play',  updateMusicBtn);
+    // Show ✕ if the file can't be found at all
     bgAudio.addEventListener('error', () => {
-      console.error('Audio error — check music.mp3 is in the repo root and has been committed/pushed.');
+      console.error('music.mp3 not found — check it is committed and pushed to the repo root.');
       musicBtn.textContent = '✕';
       musicBtn.title = 'Audio file not found';
     });
